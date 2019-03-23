@@ -13,27 +13,63 @@ class MaxHeap {
 	}
 
 	pop() {
-		
+		if(this.root != null){
+			return this.root.data;
+		}
 	}
 
 	detachRoot() {
-		
+		if (this.root == this.parentNodes[0]) {
+			this.parentNodes.shift()
+		}
+		let thisRoot = this.root;
+		this.root = null;
+		return thisRoot;
 	}
 
 	restoreRootFromLastInsertedNode(detached) {
-		
+		let newRoot = this.parentNodes[this.parentNodes.length-1];
+		this.root = newRoot;
+		this.parentNodes.pop();
+		this.parentNodes.unshift(newRoot.parent);//проверить эту шляпу
+		newRoot.parent.removeChild(newRoot);
+		if (detached.left  !== null) {newRoot.appendChild(detached.left);}
+		if (detached.right !== null) {newRoot.appendChild(detached.right);}
+		if( newRoot.left === null || newRoot.right === null){
+			this.parentNodes.unshift(newRoot);
+		}
+		// this.parentNodes.pop();
+		// let detachedPos = this.parentNodes.indexOf(detached);
+		// if (detachedPos >= 0){
+		// 	this.parentNodes[detachedPos] = newRoot;
+		// }
+		// newRoot.parent = null;
 	}
 
 	size() {
-		
+		if(this.root == null){
+			return 0
+		} else {
+			function nodeLength (node){
+				let count = 1
+				if (node.left  !=  null){ count += nodeLength (node.left)};
+				if (node.right !=  null){ count += nodeLength (node.right)};
+				return count;
+			}
+			return nodeLength(this.root)
+		}
 	}
 
 	isEmpty() {
-		
+		if(this.size() != 0 ){
+			return false;
+		}
+		return true; 
 	}
 
 	clear() {
-		
+		this.root = null;
+		this.parentNodes = [];
 	}
 
 	insertNode(node) {
@@ -52,27 +88,24 @@ class MaxHeap {
 	}
 
 	shiftNodeUp(node) {
-		// if (node.parent == null) {
-		// 	this.root = node;
-		// 	return;
-		// }
-		// if (node.priority > node.parent.priority){
-		// 	let nodePosition = this.parentNodes.indexOf(node),
-		// 		nodeParentPosition = this.parentNodes.indexOf(node.parent);
-		// 		this.parentNodes[nodePosition] = node.parent;
-		// 		this.parentNodes[nodeParentPosition] = node;
-		// 	node.swapWithParent();
-		// 	this.shiftNodeUp(node);
-		// }
 		if (node.parent == null) {
 			this.root = node;
 			return;
 		}
 		if (node.priority > node.parent.priority) {
-			let [indexOfNode, indexOfParent] = [this.parentNodes.indexOf(node), 
-				                                this.parentNodes.indexOf(node.parent)];
-			if (~indexOfNode) this.parentNodes[indexOfNode] = node.parent;
-			if (~indexOfParent) this.parentNodes[indexOfParent] = node;
+
+			let nodeIndex = this.parentNodes.indexOf(node);
+			let	nodeParentIndex = this.parentNodes.indexOf(node.parent);
+			if (this.root == node.parent){
+				this.root = node;
+				// root.parent = null;
+			}
+			if (nodeIndex >= 0){
+				this.parentNodes[nodeIndex] = node.parent;
+			}	;
+			if (nodeParentIndex >= 0){
+				this.parentNodes[nodeParentIndex] = node;
+			}	;
 
 			node.swapWithParent();
 			this.shiftNodeUp(node);
@@ -80,7 +113,36 @@ class MaxHeap {
 	}
 
 	shiftNodeDown(node) {
-		
+		if (node == null) return;
+		let nodeSon;
+		if(node.left === null && node.right === null){
+			return;
+		} else if(node.right === null && node.left !== null){
+			nodeSon = node.left;
+		} else if(node.left === null && node.right !== null){
+			nodeSon = node.right;
+		} else if(node.right.priority > node.left.priority){
+			nodeSon = node.right;
+		} else if(node.left.priority >= node.right.priority ){
+			nodeSon = node.left
+		}
+
+		if (node.priority < nodeSon.priority){
+			let nodeIndex = this.parentNodes.indexOf(node);
+			let	nodeParentIndex = this.parentNodes.indexOf(nodeSon);
+
+			if (nodeIndex >= 0){
+				this.parentNodes[nodeIndex] = nodeSon;
+			}
+			if (nodeParentIndex >= 0){
+				this.parentNodes[nodeParentIndex] = node;
+			}
+			nodeSon.swapWithParent();
+			if (node === this.root){
+				this.root = nodeSon;
+			}
+			this.shiftNodeDown(node);
+		}
 	}
 }
 
