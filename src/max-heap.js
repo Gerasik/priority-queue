@@ -13,9 +13,14 @@ class MaxHeap {
 	}
 
 	pop() {
-		if(this.root != null){
-			return this.root.data;
+		if (this.root === null){
+			return ;
 		}
+		let detachedRoot  = this.detachRoot();
+		this.restoreRootFromLastInsertedNode(detachedRoot);
+		this.shiftNodeDown(this.root);
+		return detachedRoot.data;
+		
 	}
 
 	detachRoot() {
@@ -28,22 +33,24 @@ class MaxHeap {
 	}
 
 	restoreRootFromLastInsertedNode(detached) {
-		let newRoot = this.parentNodes[this.parentNodes.length-1];
-		this.root = newRoot;
-		this.parentNodes.pop();
-		this.parentNodes.unshift(newRoot.parent);//проверить эту шляпу
-		newRoot.parent.removeChild(newRoot);
-		if (detached.left  !== null) {newRoot.appendChild(detached.left);}
-		if (detached.right !== null) {newRoot.appendChild(detached.right);}
-		if( newRoot.left === null || newRoot.right === null){
-			this.parentNodes.unshift(newRoot);
+		if (this.parentNodes.length != 0){
+			let newRoot = this.parentNodes[this.parentNodes.length-1];
+			this.root = newRoot;
+			this.parentNodes.pop();
+			if(newRoot.parent !== detached) {
+				if(this.parentNodes.indexOf(newRoot.parent) < 0){
+					this.parentNodes.unshift(newRoot.parent);
+				}			
+			}
+			if(newRoot.parent !== null){
+				newRoot.parent.removeChild(newRoot);
+			}		
+			if (detached.left  != null) {newRoot.appendChild(detached.left);}
+			if (detached.right != null) {newRoot.appendChild(detached.right);}
+			if( newRoot.left === null || newRoot.right === null){
+				this.parentNodes.unshift(newRoot);
+			}
 		}
-		// this.parentNodes.pop();
-		// let detachedPos = this.parentNodes.indexOf(detached);
-		// if (detachedPos >= 0){
-		// 	this.parentNodes[detachedPos] = newRoot;
-		// }
-		// newRoot.parent = null;
 	}
 
 	size() {
@@ -98,7 +105,6 @@ class MaxHeap {
 			let	nodeParentIndex = this.parentNodes.indexOf(node.parent);
 			if (this.root == node.parent){
 				this.root = node;
-				// root.parent = null;
 			}
 			if (nodeIndex >= 0){
 				this.parentNodes[nodeIndex] = node.parent;
